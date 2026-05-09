@@ -30,4 +30,4 @@ async def create_link(url: str, db: AsyncSession = Depends(get_db)):
     else:
         link_field = await add_link(db, url)
         code = encoding_base52(link_field.id)
-    return {"status": 200, "link": f"http://192.168.0.12:8000/{code}"}
+    return {"status": 200, "link": f"http://127.0.0.1:8000/{code}"}
