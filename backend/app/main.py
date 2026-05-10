@@ -1,21 +1,39 @@
 from contextlib import asynccontextmanager
+from os import environ
 
+from dishka import make_async_container
+from dishka.integrations.fastapi import setup_dishka, FastapiProvider
 from fastapi import FastAPI
 
-from app.api.routes import links
-from app.db.init_db import init_db
+from core import get_settings_from_envvars
+from db import DBProvider
+from routes import links_router
+
+
+settings = get_settings_from_envvars(environ)
+
+
+db_provider = DBProvider(settings.database_url)
+container = make_async_container(
+    db_provider,
+    FastapiProvider(),
+)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    db_provider.create_tables()
     yield
+    await app.state.dishka_container.close()
 
 
-app = FastAPI(lifespan=lifespan)
-app.include_router(links.router)
+shorter_app = FastAPI(lifespan=lifespan)
+shorter_app.include_router(links_router)
+
+setup_dishka(container=container, app=shorter_app)
 
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("app.main:app", host="192.168.0.12", port=8000, reload=True)
+    uvicorn.run("main:shorter_app", host="127.0.0.1", port=80, reload=True)
