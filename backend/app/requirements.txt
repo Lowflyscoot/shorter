@@ -1,6 +1,6 @@
-fastapi
-pydantic
-SQLAlchemy
+fastapi==0.136.1
+SQLAlchemy==2.0.49
+pydantic==2.12
 uvicorn
 dishka
 psycopg[binary]
