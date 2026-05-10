@@ -4,5 +4,43 @@ services:
   backend:
     build:
       context: ./backend
+    env_file:
+      - .env
     ports:
-      - "8088:8000"
+      - "8089:80"
+    networks:
+      - postgres-network
+    depends_on:
+      - database
+
+  database:
+    image: 'postgres:latest'
+    ports:
+      - 7357:5432
+    env_file:
+      - .env
+    volumes:
+      - db-data:/var/lib/postgresql
+    networks:
+      - postgres-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 7358:8000
+    env_file:
+      - .env
+    depends_on:
+      - database
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - postgres-network
+
+networks:
+  postgres-network:
+    driver: bridge
+
+volumes:
+  db-data:
+  pgadmin-data:
